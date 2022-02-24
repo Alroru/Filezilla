@@ -64,6 +64,7 @@ public class clienteFTPBasico extends JFrame
 	JButton botonCrearDirectorio = new JButton("Crear Directorio");
 	JButton botonEliminarDirectorio = new JButton("Eliminar Directorio");
 	JButton botonRenombrarDirectorio = new JButton("Renombrar Directorio");
+	JButton botonVolverARaiz = new JButton("Volver A Raiz");
 	JButton botonSalir = new JButton("Salir");
 
 
@@ -96,9 +97,9 @@ public class clienteFTPBasico extends JFrame
 	public clienteFTPBasico() throws IOException
 	{
 		super("CLIENTE BÁSICO FTP");
-		
+
 		//MODELO
-		
+
 		//Para ver los comandos que se originan
 		cliente.addProtocolCommandListener(new PrintCommandListener(new PrintWriter (System.out)));
 		cliente.connect(servidor);
@@ -113,10 +114,10 @@ public class clienteFTPBasico extends JFrame
 		//Obteniendo ficheros y directorios del directorio actual
 		FTPFile[] files = cliente.listFiles();
 		llenarLista(files,direcInicial);
-		
-		
+
+
 		//VISTA
-		
+
 		//Contruyendo txt
 		txtFicheroSeleccionado.setBounds(364, 263, 183, 19);
 		txtServidor.setBounds(364, 68, 183, 19);
@@ -145,12 +146,14 @@ public class clienteFTPBasico extends JFrame
 		contenedor.add(botonDescargarFichero);
 		botonEliminarFichero.setBounds(182, 494, 148, 21);
 		contenedor.add(botonEliminarFichero);
-		botonSalir.setBounds(430, 520, 99, 21);
+		botonSalir.setBounds(414, 520, 115, 21);
 		contenedor.add(botonSalir);
 		botonRenombrarFichero.setBounds(17, 494, 150, 21);
 		contenedor.add(botonRenombrarFichero);
 		botonRenombrarDirectorio.setBounds(364, 373, 183, 21);
 		contenedor.add(botonRenombrarDirectorio);
+		botonVolverARaiz.setBounds(414, 494, 115, 21);
+		contenedor.add(botonVolverARaiz);
 
 		//Construyendo Labels
 		lblFicheros.setForeground(SystemColor.textHighlight);
@@ -194,28 +197,33 @@ public class clienteFTPBasico extends JFrame
 		barraDesplazamiento.setBounds(new Rectangle(19, 5, 335, 420));
 		contenedor.add(barraDesplazamiento);
 
+
+
+
 		//Atributos del Frame.
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setSize(571,605);
 		setVisible(true);
 		setResizable(false);
 
-		//Acciones al pulsar en la lista o en los botones
+		//Acciones al pulsar en la lista o en los botones CONTROLADOR
+
+		//En este evento se consigue entrar con doble click en los archivos que son directorios.
 		ListaStringArchivos.addMouseListener(new MouseListener()
 		{
 
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				if (e.getClickCount() == 2 ) {
-					
-				    if(ListaStringArchivos.getSelectedValue().toString().contains("(DIR)"))
-				    {
-				    	//String directorio = direcSelec;
-				    	//directorio = directorio + "/" + ListaStringArchivos.getSelectedValue().toString();
-				    	direcSelec=ListaStringArchivos.getSelectedValue().toString().trim();//directorio;
-				    	try {
-				    		//Directorio de trabajo actual
-							cliente.changeWorkingDirectory(direcSelec);
+
+					if(ListaStringArchivos.getSelectedValue().toString().contains("(DIR)"))
+					{
+						//Debemos eliminar (DIR) para que el cambio de directorios sea correcto
+						String directorioCompleto=ListaStringArchivos.getSelectedValue().toString();//directorio;
+						String[] separar = directorioCompleto.split(" ");
+						try {
+							//Directorio de trabajo actual
+							cliente.changeWorkingDirectory(separar[1]);
 							FTPFile[] ff2 = null;
 							//Obtener ficheros del directorio actual
 							ff2 = cliente.listFiles();
@@ -225,11 +233,11 @@ public class clienteFTPBasico extends JFrame
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
 						}
-				    	finally {
-				    		
-				    	}
-				    }
-				  }
+						finally {
+
+						}
+					}
+				}
 
 			}
 
@@ -270,20 +278,58 @@ public class clienteFTPBasico extends JFrame
 				String fic = "";
 				if (lse.getValueIsAdjusting()) 
 				{
-					ficheroSelec ="";
+					/*ficheroSelec ="";
 					//Elemento que se ha seleccionado de la lista
 					fic =ListaStringArchivos.getSelectedValue().toString();
 
 					//Se trata de un fichero
 					ficheroSelec = fic;
 					txtFicheroSeleccionado.setText( ficheroSelec);
-					
+
 
 					//Nos quedamos con el nocmbre
-					txtDirectorioActual.setText(direcSelec);
+					txtDirectorioActual.setText(direcSelec);*/
+					ficheroSelec ="";
+					//elemento que se ha seleccionado de la lista
+					fic =ListaStringArchivos.getSelectedValue().toString();
+					//Se trata de un fichero
+					ficheroSelec =direcInicial	+ direcSelec+"/"+fic;
+					txtFicheroSeleccionado.setText( ficheroSelec);
+
+					txtDirectorioActual.setText( direcSelec);
+
 				}
 			}
 		});
+
+		botonVolverARaiz.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				ficheroSelec="";
+				direcSelec="/";
+				//Directorio de trabajo actual
+				try {
+					cliente.changeWorkingDirectory(direcSelec);
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				FTPFile[] ff2 = null;
+				//Obtener ficheros del directorio actual
+				try {
+					ff2 = cliente.listFiles();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				//Llenar la lista
+				llenarLista(ff2, direcSelec);
+
+
+			}
+		});
+
 
 		botonSalir.addActionListener(new ActionListener() 
 		{
@@ -389,6 +435,35 @@ public class clienteFTPBasico extends JFrame
 			public void actionPerformed(ActionEvent e)
 			{
 
+				String renombrar = JOptionPane.showInputDialog(null,"Introduce el nuevo nombre","Nuevo nombre");
+				if (!(renombrar==null)&&(ListaStringArchivos.getSelectedValue().toString().contains("(DIR)"))) 
+				{
+					try 
+					{
+					cliente.rename(ListaStringArchivos.getSelectedValue().toString(), renombrar);
+					} 
+					catch (IOException e1) {
+					// TODO Auto-generated catch block
+					}}
+				else {JOptionPane.showInputDialog("Eso es un archivo");}
+				try {
+					cliente.changeWorkingDirectory(direcSelec);
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				FTPFile[] ff2 = null;
+				//obtener ficheros del directorio actual
+				try {
+					ff2 = cliente.listFiles();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				//llenar la lista
+				llenarLista(ff2, direcSelec);
+					
+					
 
 			}
 		});
@@ -461,9 +536,36 @@ public class clienteFTPBasico extends JFrame
 		{
 			@Override
 			public void actionPerformed(ActionEvent e)
-			{
-
-			}
+			{	
+				String renombrar = JOptionPane.showInputDialog(null,"Introduce el nuevo nombre","Nuevo nombre");
+				if (!(renombrar==null)&&(!ListaStringArchivos.getSelectedValue().toString().contains("(DIR)"))) 
+				{
+					try 
+					{
+					cliente.rename(ListaStringArchivos.getSelectedValue().toString(), renombrar);
+					} 
+					catch (IOException e1) {
+					// TODO Auto-generated catch block
+					}}
+				else {JOptionPane.showInputDialog("Eso es un directorio");}
+				try {
+					cliente.changeWorkingDirectory(direcSelec);
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				FTPFile[] ff2 = null;
+				//obtener ficheros del directorio actual
+				try {
+					ff2 = cliente.listFiles();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				//llenar la lista
+				llenarLista(ff2, direcSelec);
+					
+					}
 		});
 	} // fin constructor
 
@@ -481,7 +583,7 @@ public class clienteFTPBasico extends JFrame
 		ListaStringArchivos.setFont(fuente);
 		//se eliminan los elementos de la lista
 		ListaStringArchivos.removeAll();
-		try 
+		/*try 
 		{
 			//se establece el directorio de trabajo actual
 			cliente.changeWorkingDirectory(direc2);
@@ -489,7 +591,7 @@ public class clienteFTPBasico extends JFrame
 		catch (IOException e) 
 		{
 			e.printStackTrace();
-		}
+		}*/
 		direcSelec = direc2; //directorio actual
 		//se añade el directorio de trabajo al listmodel, primerelementomodeloLista.addElement(direc2);
 		//se recorre el array con los ficheros y directorios
