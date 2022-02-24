@@ -223,6 +223,7 @@ public class clienteFTPBasico extends JFrame
 						String[] separar = directorioCompleto.split(" ");
 						try {
 							//Directorio de trabajo actual
+							direcSelec=direcSelec+separar[1]+"/";
 							cliente.changeWorkingDirectory(separar[1]);
 							FTPFile[] ff2 = null;
 							//Obtener ficheros del directorio actual
@@ -278,7 +279,7 @@ public class clienteFTPBasico extends JFrame
 				String fic = "";
 				if (lse.getValueIsAdjusting()) 
 				{
-					/*ficheroSelec ="";
+					ficheroSelec ="";
 					//Elemento que se ha seleccionado de la lista
 					fic =ListaStringArchivos.getSelectedValue().toString();
 
@@ -288,15 +289,8 @@ public class clienteFTPBasico extends JFrame
 
 
 					//Nos quedamos con el nocmbre
-					txtDirectorioActual.setText(direcSelec);*/
-					ficheroSelec ="";
-					//elemento que se ha seleccionado de la lista
-					fic =ListaStringArchivos.getSelectedValue().toString();
-					//Se trata de un fichero
-					ficheroSelec =direcInicial	+ direcSelec+"/"+fic;
-					txtFicheroSeleccionado.setText( ficheroSelec);
-
-					txtDirectorioActual.setText( direcSelec);
+					txtDirectorioActual.setText(direcSelec);
+				
 
 				}
 			}
@@ -394,7 +388,7 @@ public class clienteFTPBasico extends JFrame
 			public void actionPerformed(ActionEvent e)
 			{
 				String nombreCarpeta = JOptionPane.showInputDialog(null,"Introduce el nombre del directorio a eliminar","carpeta");
-				if (!(nombreCarpeta==null)) 
+				if ((!(nombreCarpeta==null))&&(ListaStringArchivos.getSelectedValue().toString().contains("(DIR)"))) 
 				{
 					String directorio = direcSelec;
 					if (!direcSelec.equals("/"))
@@ -436,7 +430,7 @@ public class clienteFTPBasico extends JFrame
 			{
 
 				String renombrar = JOptionPane.showInputDialog(null,"Introduce el nuevo nombre","Nuevo nombre");
-				if (!(renombrar==null)&&(ListaStringArchivos.getSelectedValue().toString().contains("(DIR)"))) 
+				if ((!(renombrar==null))&&(ListaStringArchivos.getSelectedValue().toString().contains("(DIR)"))) 
 				{
 					try 
 					{
@@ -445,7 +439,7 @@ public class clienteFTPBasico extends JFrame
 					catch (IOException e1) {
 					// TODO Auto-generated catch block
 					}}
-				else {JOptionPane.showInputDialog("Eso es un archivo");}
+				else {JOptionPane.showMessageDialog(null, ListaStringArchivos.getSelectedValue().toString() + " => No se ha podido Renombrar ...");}
 				try {
 					cliente.changeWorkingDirectory(direcSelec);
 				} catch (IOException e1) {
@@ -525,7 +519,7 @@ public class clienteFTPBasico extends JFrame
 				String directorio = direcSelec;
 				if (!direcSelec.equals("/"))
 					directorio = directorio + "/";
-				if (!direcSelec.equals("")) 
+				if ((!direcSelec.equals(""))&&(!ListaStringArchivos.getSelectedValue().toString().contains("(DIR)"))) 
 				{
 					BorrarFichero(directorio + ficheroSelec,ficheroSelec);
 				}
@@ -538,7 +532,7 @@ public class clienteFTPBasico extends JFrame
 			public void actionPerformed(ActionEvent e)
 			{	
 				String renombrar = JOptionPane.showInputDialog(null,"Introduce el nuevo nombre","Nuevo nombre");
-				if (!(renombrar==null)&&(!ListaStringArchivos.getSelectedValue().toString().contains("(DIR)"))) 
+				if ((!(renombrar==null))&&(!ListaStringArchivos.getSelectedValue().toString().contains("(DIR)"))) 
 				{
 					try 
 					{
@@ -547,7 +541,7 @@ public class clienteFTPBasico extends JFrame
 					catch (IOException e1) {
 					// TODO Auto-generated catch block
 					}}
-				else {JOptionPane.showInputDialog("Eso es un directorio");}
+				else {JOptionPane.showMessageDialog(null, ListaStringArchivos.getSelectedValue().toString() + " => No se ha podido Renombrar ...");}
 				try {
 					cliente.changeWorkingDirectory(direcSelec);
 				} catch (IOException e1) {
